@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     
     # Server
     host: str = "0.0.0.0"
-    port: int = 8080
+    port: int = 8080  # Railway overrides via PORT env var
     
     # Database
     database_url: str = "sqlite:///./test.db"
