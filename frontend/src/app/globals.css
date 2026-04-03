@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: 'Arcade';
+    src: url('/fonts/arcade-classic.ttf') format('truetype');
+    font-weight: 400;
+  }
+
+  @font-face {
+    font-family: 'Display';
+    src: url('/fonts/display-bold.ttf') format('truetype');
+    font-weight: 700;
+  }
+
+  body {
+    @apply bg-arcade-dark text-white;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-arcade-primary hover:bg-arcade-primary/90 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-arcade-secondary hover:bg-arcade-secondary/90 rounded-lg font-semibold transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-arcade-dark/50 backdrop-blur border border-arcade-primary/20 rounded-lg p-6 hover:border-arcade-primary/50 transition-colors duration-200;
+  }
+
+  .glow-accent {
+    @apply shadow-lg shadow-arcade-primary/50;
+  }
+}
