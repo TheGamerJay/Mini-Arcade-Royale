@@ -14,8 +14,8 @@
     "restartPolicyMaxRetries": 10,
     "healthcheckPath": "/api/health",
     "healthcheckInterval": 10,
-    "healthcheckTimeout": 5,
-    "startTimeout": 60
+    "healthcheckTimeout": 15,
+    "startTimeout": 120
   },
   "variables": {
     "APP_ENV": "production",
