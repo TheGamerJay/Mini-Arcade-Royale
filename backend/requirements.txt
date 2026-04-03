@@ -16,5 +16,3 @@ stripe>=7.4.0
 resend>=0.3.0
 sentry-sdk==1.39.1
 gunicorn==21.2.0
-pytest==7.4.3
-pytest-asyncio==0.22.1
