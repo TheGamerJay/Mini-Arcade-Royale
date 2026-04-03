@@ -6,21 +6,21 @@
       "backend/**",
       "frontend/**",
       "requirements.txt",
-      "package.json",
       "Dockerfile"
     ]
   },
   "deploy": {
-    "startCommand": "sh -c 'uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}'",
+    "startCommand": "sh -c /app/start.sh",
     "restartPolicyMaxRetries": 10,
     "healthcheckPath": "/api/health",
     "healthcheckInterval": 10,
     "healthcheckTimeout": 5,
-    "startTimeout": 30
+    "startTimeout": 60
   },
   "variables": {
     "APP_ENV": "production",
     "PORT": "8080",
-    "LOG_LEVEL": "info"
+    "LOG_LEVEL": "info",
+    "NODE_ENV": "production"
   }
 }
