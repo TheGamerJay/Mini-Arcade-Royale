@@ -170,6 +170,25 @@ echo "🔍 Checking nginx status..."
 service nginx status || echo "❌ Nginx status check failed"
 netstat -tlnp | grep :8080 || echo "Port 8080 not listening"
 
+echo "⏳ Waiting for nginx-backed healthcheck on port 8080..."
+RETRIES=0
+while [ $RETRIES -lt 12 ]; do
+  if curl -f http://127.0.0.1:8080/api/health > /dev/null 2>&1; then
+    echo "✅ nginx /api/health is ready"
+    break
+  fi
+  echo "🔄 nginx not ready yet, retrying... ($RETRIES)"
+  RETRIES=$((RETRIES + 1))
+  sleep 2
+done
+
+if [ $RETRIES -ge 12 ]; then
+  echo "❌ nginx /api/health did not become ready"
+  echo "🔍 nginx logs:"
+  cat /var/log/nginx/error.log 2>/dev/null || true
+  exit 1
+fi
+
 echo "✅ All services started!"
 echo "📍 Open: http://localhost:8080"
 
