@@ -16,8 +16,8 @@ const config: Config = {
         'arcade-light': '#F5F5F5',
       },
       fontFamily: {
-        'arcade': ['Arcade', 'monospace'],
-        'display': ['Display', 'system-ui'],
+        'arcade': ['Courier New', 'monospace'],
+        'display': ['system-ui', 'sans-serif'],
       },
       animation: {
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',

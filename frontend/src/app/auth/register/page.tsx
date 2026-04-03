@@ -4,6 +4,12 @@ import { ChangeEvent, FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+declare const process: {
+  env: {
+    NEXT_PUBLIC_API_URL?: string
+  }
+}
+
 export default function RegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -31,6 +37,10 @@ export default function RegisterPage() {
     setError('')
     setLoading(true)
 
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'https://mini-arcade-royale-production.up.railway.app')
+      .replace(/\/$/, '')
+      .replace(/\/api\/v1$/, '')
+
     try {
       // Validate
       if (!formData.email || !formData.username || !formData.password) {
@@ -48,7 +58,7 @@ export default function RegisterPage() {
 
       // Call backend
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://mini-arcade-royale-production.up.railway.app'}/api/v1/auth/register`,
+        `${apiBase}/api/v1/auth/register`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

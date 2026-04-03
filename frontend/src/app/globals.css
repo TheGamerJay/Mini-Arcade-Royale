@@ -3,18 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  @font-face {
-    font-family: 'Arcade';
-    src: url('/fonts/arcade-classic.ttf') format('truetype');
-    font-weight: 400;
-  }
-
-  @font-face {
-    font-family: 'Display';
-    src: url('/fonts/display-bold.ttf') format('truetype');
-    font-weight: 700;
-  }
-
   body {
     @apply bg-arcade-dark text-white;
   }

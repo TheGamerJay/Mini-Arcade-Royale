@@ -4,6 +4,12 @@ import { ChangeEvent, FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+declare const process: {
+  env: {
+    NEXT_PUBLIC_API_URL?: string
+  }
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -26,13 +32,17 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
+    const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'https://mini-arcade-royale-production.up.railway.app')
+      .replace(/\/$/, '')
+      .replace(/\/api\/v1$/, '')
+
     try {
       if (!formData.email || !formData.password) {
         throw new Error('Email and password required')
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://mini-arcade-royale-production.up.railway.app'}/api/v1/auth/login`,
+        `${apiBase}/api/v1/auth/login`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
