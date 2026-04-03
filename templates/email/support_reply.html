@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Reply</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0F0F1E; }
+        .container { max-width: 600px; margin: 0 auto; background: #1A1A2E; color: #FFFFFF; }
+        .header { background: linear-gradient(135deg, #00D9FF 0%, #9D4EDD 100%); padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; color: #FFFFFF; }
+        .content { padding: 40px 30px; }
+        .btn { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #00D9FF 0%, #0099BB 100%); color: #0F0F1E; text-decoration: none; border-radius: 6px; font-weight: 600; }
+        .footer { text-align: center; padding: 30px; color: #B0B0C0; font-size: 12px; border-top: 1px solid rgba(0, 217, 255, 0.2); }
+        .text-secondary { color: #B0B0C0; }
+        .ticket-box { background: rgba(0, 217, 255, 0.1); border-left: 4px solid #00D9FF; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .message-box { background: rgba(157, 78, 221, 0.1); border-left: 4px solid #9D4EDD; padding: 15px; border-radius: 4px; margin: 20px 0; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 Support Reply</h1>
+        </div>
+        <div class="content">
+            <p>Hi {{username}},</p>
+            <p>Our support team has replied to your ticket. Check out their response below.</p>
+            <div class="ticket-box">
+                <strong>Ticket ID:</strong> #{{ticket_id}}<br>
+                <strong>Subject:</strong> {{subject}}<br>
+                <strong>Status:</strong> {{status}}
+            </div>
+            <h3 style="color: #00D9FF; margin-top: 30px;">Support Team:</h3>
+            <div class="message-box">
+                {{support_reply}}
+            </div>
+            <p style="text-align: center; margin: 30px 0;">
+                <a href="{{app_url}}/support/{{ticket_id}}" class="btn">View Full Ticket</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p style="margin: 0;">
+                Need more help? <a href="{{app_url}}/support" style="color: #00D9FF; text-decoration: none;">Contact Support</a> •
+                <a href="{{app_url}}/legal/terms" style="color: #00D9FF; text-decoration: none;">Terms</a>
+            </p>
+            <p>&copy; {{year}} Mini Arcade Royale. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

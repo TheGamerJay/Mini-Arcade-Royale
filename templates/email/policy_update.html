@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Update</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0F0F1E; }
+        .container { max-width: 600px; margin: 0 auto; background: #1A1A2E; color: #FFFFFF; }
+        .header { background: linear-gradient(135deg, #00D9FF 0%, #9D4EDD 100%); padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; color: #FFFFFF; }
+        .content { padding: 40px 30px; }
+        .btn { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #00D9FF 0%, #0099BB 100%); color: #0F0F1E; text-decoration: none; border-radius: 6px; font-weight: 600; }
+        .footer { text-align: center; padding: 30px; color: #B0B0C0; font-size: 12px; border-top: 1px solid rgba(0, 217, 255, 0.2); }
+        .text-secondary { color: #B0B0C0; }
+        .update-box { background: rgba(0, 217, 255, 0.1); border-left: 4px solid #00D9FF; padding: 20px; border-radius: 4px; margin: 20px 0; }
+        .changes { background: rgba(157, 78, 221, 0.1); border-left: 4px solid #9D4EDD; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        .change-item { margin: 10px 0; padding-left: 15px; border-left: 2px solid #9D4EDD; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📢 Policy Update</h1>
+        </div>
+        <div class="content">
+            <p>Hi {{username}},</p>
+            <p>We've updated our policies to serve you better. Here's what changed:</p>
+            <div class="update-box">
+                <strong>Effective Date:</strong> {{effective_date}}<br>
+                <strong>Policy:</strong> {{policy_name}}<br>
+                <strong>Version:</strong> {{version}}
+            </div>
+            <h3 style="color: #00D9FF; margin-top: 30px;">Key Changes:</h3>
+            <div class="changes">
+                {{policy_summary}}
+            </div>
+            <p style="margin-top: 30px; color: #B0B0C0; font-size: 14px;">
+                <strong>⚠️ Please review these changes.</strong> Continued use of Mini Arcade Royale after the effective date means you accept the updated policies.
+            </p>
+            <p style="text-align: center; margin: 30px 0;">
+                <a href="{{policy_url}}" class="btn">Read Full Policy</a>
+            </p>
+            <p style="text-align: center;" class="text-secondary">
+                Have questions? <a href="{{app_url}}/support" style="color: #00D9FF; text-decoration: none;">Contact Us</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p style="margin: 0;">
+                <a href="{{policy_url}}" style="color: #00D9FF; text-decoration: none;">Full Policy</a> •
+                <a href="{{app_url}}/support" style="color: #00D9FF; text-decoration: none;">Support</a>
+            </p>
+            <p>&copy; {{year}} Mini Arcade Royale. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

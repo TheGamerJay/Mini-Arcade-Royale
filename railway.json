@@ -1,0 +1,25 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "railpack",
+    "watchPaths": [
+      "backend/**",
+      "frontend/**",
+      "requirements.txt",
+      "package.json",
+      "Dockerfile"
+    ]
+  },
+  "deploy": {
+    "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port 8080",
+    "restartPolicyMaxRetries": 10,
+    "healthcheckPath": "/api/health",
+    "healthcheckInterval": 10,
+    "healthcheckTimeout": 5
+  },
+  "variables": {
+    "APP_ENV": "production",
+    "PORT": "8080",
+    "LOG_LEVEL": "info"
+  }
+}
