@@ -113,6 +113,12 @@ def create_app() -> FastAPI:
         """API v1 root"""
         return {"version": "1.0", "status": "ready"}
     
+    # Add security and performance middleware (Phase 11-13)
+    from app.middleware import RateLimitMiddleware, SecurityHeadersMiddleware, PerformanceMonitoringMiddleware
+    app.add_middleware(PerformanceMonitoringMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RateLimitMiddleware, requests_per_minute=100)
+    
     # Include all route modules
     from app.routes_auth import router as auth_router
     from app.routes_users import router as users_router
@@ -122,6 +128,9 @@ def create_app() -> FastAPI:
     from app.routes_store import router as store_router
     from app.routes_payments import router as payments_router
     from app.routes_emails import router as emails_router
+    from app.routes_admin import router as admin_router
+    from app.routes_content import router as content_router
+    from app.routes_analytics import router as analytics_router
     
     app.include_router(auth_router)
     app.include_router(users_router)
@@ -131,6 +140,9 @@ def create_app() -> FastAPI:
     app.include_router(store_router)
     app.include_router(payments_router)
     app.include_router(emails_router)
+    app.include_router(admin_router)
+    app.include_router(content_router)
+    app.include_router(analytics_router)
     
     logger.info("✓ FastAPI application created successfully")
     return app
