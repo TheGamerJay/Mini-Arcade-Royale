@@ -20,15 +20,15 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./test.db"
     
     # JWT
-    jwt_secret: str = "change-me-in-production"
+    jwt_secret: str = "dev-secret-change-in-production-do-not-use"
     jwt_algorithm: str = "HS256"
     jwt_expiration_hours: int = 24
     
     # Session
-    session_secret: str = "change-me-in-production"
+    session_secret: str = "dev-session-secret-change-in-production"
     
     # CSRF
-    csrf_secret: str = "change-me-in-production"
+    csrf_secret: str = "dev-csrf-secret-change-in-production"
     
     # Stripe
     stripe_secret_key: str = ""
