@@ -118,11 +118,19 @@ def create_app() -> FastAPI:
     from app.routes_users import router as users_router
     from app.routes_wallet import router as wallet_router
     from app.routes_games import router as games_router
+    from app.routes_leaderboard import router as leaderboard_router
+    from app.routes_store import router as store_router
+    from app.routes_payments import router as payments_router
+    from app.routes_emails import router as emails_router
     
     app.include_router(auth_router)
     app.include_router(users_router)
     app.include_router(wallet_router)
     app.include_router(games_router)
+    app.include_router(leaderboard_router)
+    app.include_router(store_router)
+    app.include_router(payments_router)
+    app.include_router(emails_router)
     
     logger.info("✓ FastAPI application created successfully")
     return app
