@@ -146,6 +146,8 @@ echo "🚀 Starting Frontend..."
 cd /app/frontend
 echo "📍 Current directory: $(pwd)"
 echo "📍 Files in directory: $(ls -la)"
+echo "📍 Checking if .next exists: $(ls -la .next 2>/dev/null || echo 'No .next directory')"
+echo "📍 Starting npm start..."
 npm start &
 FRONTEND_PID=$!
 
@@ -155,8 +157,18 @@ sleep 5
 echo "🔍 Checking if frontend is running..."
 curl -f http://127.0.0.1:3000 || echo "❌ Frontend health check failed"
 
+# If frontend failed, show more info
+if ! curl -f http://127.0.0.1:3000 > /dev/null 2>&1; then
+    echo "🔍 Frontend process check:"
+    ps aux | grep npm || echo "No npm process found"
+    netstat -tlnp | grep :3000 || echo "Port 3000 not listening"
+fi
+
 echo "🚀 Starting Nginx..."
 service nginx start
+echo "🔍 Checking nginx status..."
+service nginx status || echo "❌ Nginx status check failed"
+netstat -tlnp | grep :8080 || echo "Port 8080 not listening"
 
 echo "✅ All services started!"
 echo "📍 Open: http://localhost:8080"
