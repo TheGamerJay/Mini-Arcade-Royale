@@ -5,7 +5,6 @@ import traceback
 from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 
 # Configure logging first - ensure it goes to stdout for container visibility
@@ -58,6 +57,11 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     
+    # Health check endpoint (MUST be first and unprotected)
+    @app.get("/api/health")
+    def health():
+        return {"status": "ok"}
+    
     # CORS middleware
     allowed_origins = [
         "http://localhost:3000",
@@ -80,17 +84,6 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
-    # Trusted Host middleware
-    app.add_middleware(
-        TrustedHostMiddleware,
-        allowed_hosts=["localhost", "127.0.0.1", "mini-arcade-royale-production.up.railway.app"]
-    )
-    
-    # Health check endpoint
-    @app.get("/api/health")
-    def health():
-        return {"status": "ok"}
     
     # Root endpoint
     @app.get("/")
