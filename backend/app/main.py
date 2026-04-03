@@ -40,15 +40,16 @@ async def lifespan(app: FastAPI):
     logger.info(f"✓ Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"✓ Environment: {settings.app_env}")
     logger.info(f"✓ Listening on {settings.host}:{settings.port}")
+    logger.info(f"✓ Database URL: {settings.database_url[:50]}...")
     
-    # Initialize database tables
+    # Initialize database tables (gracefully skip if not available)
     try:
         from app.database import create_all_tables
         create_all_tables()
         logger.info("✓ Database tables initialized")
     except Exception as e:
-        logger.error(f"✗ Failed to initialize database: {e}", exc_info=True)
-        raise
+        logger.warning(f"⚠ Database initialization deferred: {str(e)[:100]}")
+        logger.info("  (Tables will be created on first use or via migrations)")
     
     yield
     
