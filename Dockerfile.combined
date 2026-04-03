@@ -1,0 +1,70 @@
+FROM node:18-alpine AS frontend-builder
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ .
+RUN npm run build
+
+FROM python:3.11-slim AS backend-builder
+WORKDIR /backend
+COPY backend/requirements.txt .
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential python3-dev libpq-dev postgresql-client && \
+    pip install --upgrade pip && \
+    pip install --user --no-cache-dir -r requirements.txt && \
+    rm -rf /var/lib/apt/lists/*
+
+FROM python:3.11-slim
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy Python backend
+COPY --from=backend-builder /root/.local /root/.local
+COPY backend/ ./backend/
+
+# Copy Node frontend build
+COPY --from=frontend-builder /frontend/.next /frontend/.next
+COPY --from=frontend-builder /frontend/node_modules /frontend/node_modules
+COPY --from=frontend-builder /frontend/public /frontend/public
+COPY --from=frontend-builder /frontend/package.json /frontend/
+COPY frontend/pages/ /frontend/pages/ 2>/dev/null || true
+
+# Install nginx
+RUN apt-get update && apt-get install -y --no-install-recommends nginx && \
+    rm -rf /var/lib/apt/lists/*
+
+# Configure nginx
+COPY <<EOF /etc/nginx/conf.d/default.conf
+server {
+    listen 8080;
+    server_name _;
+
+    # Backend API proxy
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+    
+    # Frontend (Next.js)
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+EOF
+
+ENV PATH=/root/.local/bin:$PATH
+
+EXPOSE 8080
+
+CMD ["sh", "-c", "cd /backend && uvicorn app.main:app --host 127.0.0.1 --port 8000 &sleep 2 && cd /frontend && npm start &sleep 2 && nginx -g 'daemon off;'"]
