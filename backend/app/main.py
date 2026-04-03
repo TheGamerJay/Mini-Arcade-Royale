@@ -89,15 +89,8 @@ def create_app() -> FastAPI:
     
     # Health check endpoint
     @app.get("/api/health")
-    async def health_check():
-        """Health check endpoint for load balancers and monitoring"""
-        logger.info("Health check request received")
-        return {
-            "status": "ok",
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "version": settings.app_version,
-            "environment": settings.app_env,
-        }
+    def health():
+        return {"status": "ok"}
     
     # Root endpoint
     @app.get("/")
