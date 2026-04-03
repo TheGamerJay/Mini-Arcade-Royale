@@ -122,19 +122,38 @@ set -e
 
 echo "🚀 Starting Backend..."
 cd /app/backend
-uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/backend.log 2>&1 &
+echo "📍 Current directory: $(pwd)"
+echo "📍 Files in directory: $(ls -la)"
+echo "📍 DATABASE_URL: $DATABASE_URL"
+echo "📍 Starting uvicorn..."
+uvicorn app.main:app --host 127.0.0.1 --port 8000 &
 BACKEND_PID=$!
 
 echo "⏳ Waiting for backend to start..."
-sleep 3
+sleep 5
+
+echo "🔍 Checking if backend is running..."
+curl -f http://127.0.0.1:8000/api/health || echo "❌ Backend health check failed"
+
+# If backend failed, show logs
+if ! curl -f http://127.0.0.1:8000/api/health > /dev/null 2>&1; then
+    echo "🔍 Backend logs:"
+    ps aux | grep uvicorn || echo "No uvicorn process found"
+    netstat -tlnp | grep :8000 || echo "Port 8000 not listening"
+fi
 
 echo "🚀 Starting Frontend..."
 cd /app/frontend
-npm start > /tmp/frontend.log 2>&1 &
+echo "📍 Current directory: $(pwd)"
+echo "📍 Files in directory: $(ls -la)"
+npm start &
 FRONTEND_PID=$!
 
 echo "⏳ Waiting for frontend to start..."
-sleep 4
+sleep 5
+
+echo "🔍 Checking if frontend is running..."
+curl -f http://127.0.0.1:3000 || echo "❌ Frontend health check failed"
 
 echo "🚀 Starting Nginx..."
 service nginx start

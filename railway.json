@@ -21,6 +21,7 @@
     "APP_ENV": "production",
     "PORT": "8080",
     "LOG_LEVEL": "info",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "DATABASE_URL": "${{ RAILWAY_DATABASE_URL }}"
   }
 }
