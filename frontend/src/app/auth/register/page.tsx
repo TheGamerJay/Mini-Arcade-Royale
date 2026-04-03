@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { ChangeEvent, FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -8,21 +8,25 @@ export default function RegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     username: '',
     password: '',
     passwordConfirm: '',
+    legalAccepted: false,
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -31,6 +35,9 @@ export default function RegisterPage() {
       // Validate
       if (!formData.email || !formData.username || !formData.password) {
         throw new Error('All fields required')
+      }
+      if (!formData.legalAccepted) {
+        throw new Error('You must agree to Terms and Privacy before creating an account')
       }
       if (formData.password !== formData.passwordConfirm) {
         throw new Error('Passwords do not match')
@@ -111,33 +118,75 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-arcade-primary"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? '👁️' : '🐵'}
+              </button>
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-2">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                name="passwordConfirm"
+                value={formData.passwordConfirm}
+                onChange={handleChange}
+                className="w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl"
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              >
+                {showConfirmPassword ? '👁️' : '🐵'}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
             <input
-              type="password"
-              name="passwordConfirm"
-              value={formData.passwordConfirm}
+              type="checkbox"
+              name="legalAccepted"
+              checked={formData.legalAccepted}
               onChange={handleChange}
-              className="w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-arcade-primary"
-              placeholder="••••••••"
+              className="mt-1 h-4 w-4 rounded border-gray-600 bg-arcade-dark text-arcade-primary focus:ring-arcade-primary"
               required
             />
+            <label className="text-sm text-gray-300">
+              I agree to the{' '}
+              <Link href="/legal/terms" className="text-arcade-primary hover:underline">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link href="/legal/privacy" className="text-arcade-primary hover:underline">
+                Privacy Policy
+              </Link>{' '}
+              before creating my account.
+            </label>
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !formData.legalAccepted}
             className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Creating Account...' : 'Create Account'}
