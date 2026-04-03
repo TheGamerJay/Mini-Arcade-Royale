@@ -37,6 +37,23 @@
     @apply bg-arcade-dark/50 backdrop-blur border border-arcade-primary/20 rounded-lg p-6 hover:border-arcade-primary/50 transition-colors duration-200;
   }
 
+  .no-password-toggle::-ms-reveal,
+  .no-password-toggle::-ms-clear {
+    display: none;
+  }
+
+  .no-password-toggle::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+  }
+
+  .no-password-toggle::-webkit-textfield-decoration-container {
+    display: none !important;
+  }
+
   .glow-accent {
     @apply shadow-lg shadow-arcade-primary/50;
   }

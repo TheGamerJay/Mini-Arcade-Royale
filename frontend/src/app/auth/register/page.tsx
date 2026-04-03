@@ -121,10 +121,11 @@ export default function RegisterPage() {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
+                className="no-password-toggle w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
                 placeholder="••••••••"
                 required
               />
@@ -144,10 +145,11 @@ export default function RegisterPage() {
             <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
+                autoComplete="new-password"
                 name="passwordConfirm"
                 value={formData.passwordConfirm}
                 onChange={handleChange}
-                className="w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
+                className="no-password-toggle w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
                 placeholder="••••••••"
                 required
               />

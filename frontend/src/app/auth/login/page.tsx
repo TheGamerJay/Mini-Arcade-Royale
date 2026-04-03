@@ -87,10 +87,11 @@ export default function LoginPage() {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
+                className="no-password-toggle w-full bg-arcade-dark border border-gray-600 rounded px-4 py-2 pr-12 text-white focus:outline-none focus:border-arcade-primary"
                 placeholder="••••••••"
                 required
               />
