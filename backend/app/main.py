@@ -8,20 +8,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 
-# Configure logging first
+# Configure logging first - ensure it goes to stdout for container visibility
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
     stream=sys.stdout,
     force=True
 )
 logger = logging.getLogger(__name__)
 
+# Load settings
 try:
     from app.config import get_settings
     settings = get_settings()
     logger.info(f"✓ Configuration loaded: {settings.app_name} v{settings.app_version}")
     logger.info(f"✓ Environment: {settings.app_env}")
+except ImportError as e:
+    logger.error(f"✗ Import error loading configuration: {e}")
+    logger.error(traceback.format_exc())
+    raise
 except Exception as e:
     logger.error(f"✗ Failed to load configuration: {e}")
     logger.error(traceback.format_exc())
