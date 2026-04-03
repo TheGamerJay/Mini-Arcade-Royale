@@ -15,6 +15,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.requests = defaultdict(list)
     
     async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for health checks
+        if request.url.path in ["/api/health", "/health"]:
+            return await call_next(request)
+        
         client_ip = request.client.host
         now = datetime.now()
         

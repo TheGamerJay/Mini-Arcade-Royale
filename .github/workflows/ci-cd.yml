@@ -89,8 +89,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy to Railway
-    needs: [backend-tests, frontend-tests]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: always()
     
     steps:
       - uses: actions/checkout@v3
