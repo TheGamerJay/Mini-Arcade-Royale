@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     port: int = 8080  # Railway overrides via PORT env var
     
     # Database
-    database_url: str = "sqlite:///./test.db"
+    database_url: str = "postgresql://arcade_dev:arcade_pass@localhost:5432/arcade_royale_dev"
     
     # JWT
     jwt_secret: str = "dev-secret-change-in-production-do-not-use"

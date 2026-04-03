@@ -41,6 +41,15 @@ async def lifespan(app: FastAPI):
     logger.info(f"✓ Environment: {settings.app_env}")
     logger.info(f"✓ Listening on {settings.host}:{settings.port}")
     
+    # Initialize database tables
+    try:
+        from app.database import create_all_tables
+        create_all_tables()
+        logger.info("✓ Database tables initialized")
+    except Exception as e:
+        logger.error(f"✗ Failed to initialize database: {e}", exc_info=True)
+        raise
+    
     yield
     
     # Shutdown
@@ -102,6 +111,10 @@ def create_app() -> FastAPI:
     async def api_v1_root():
         """API v1 root"""
         return {"version": "1.0", "status": "ready"}
+    
+    # Include auth routes
+    from app.routes_auth import router as auth_router
+    app.include_router(auth_router)
     
     logger.info("✓ FastAPI application created successfully")
     return app
