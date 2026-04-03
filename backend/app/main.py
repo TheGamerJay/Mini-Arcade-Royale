@@ -113,9 +113,16 @@ def create_app() -> FastAPI:
         """API v1 root"""
         return {"version": "1.0", "status": "ready"}
     
-    # Include auth routes
+    # Include all route modules
     from app.routes_auth import router as auth_router
+    from app.routes_users import router as users_router
+    from app.routes_wallet import router as wallet_router
+    from app.routes_games import router as games_router
+    
     app.include_router(auth_router)
+    app.include_router(users_router)
+    app.include_router(wallet_router)
+    app.include_router(games_router)
     
     logger.info("✓ FastAPI application created successfully")
     return app
