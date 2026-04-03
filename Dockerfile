@@ -147,8 +147,8 @@ cd /app/frontend
 echo "📍 Current directory: $(pwd)"
 echo "📍 Files in directory: $(ls -la)"
 echo "📍 Checking if .next exists: $(ls -la .next 2>/dev/null || echo 'No .next directory')"
-echo "📍 Starting npm start..."
-npm start &
+echo "📍 Starting npm start on port 3000..."
+PORT=3000 npm start &
 FRONTEND_PID=$!
 
 echo "⏳ Waiting for frontend to start..."
