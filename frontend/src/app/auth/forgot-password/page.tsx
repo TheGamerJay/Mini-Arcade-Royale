@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
               <h2 className="text-lg font-semibold mb-2">Check Your Inbox</h2>
               <p className="text-arcade-text-muted text-sm mb-6">
                 If an account with <strong className="text-arcade-text">{email}</strong> exists,
-                we've sent a password reset link. Check your spam folder too.
+                we&apos;ve sent a password reset link. Check your spam folder too.
               </p>
               <p className="text-xs text-arcade-text-muted mb-6">The link expires in 1 hour.</p>
               <Link href="/auth/login" className="btn-primary w-full block text-center">
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
               </button>
 
               <p className="text-center text-sm text-arcade-text-muted">
-                Remember it?{' '}
+                Remember it?&nbsp;
                 <Link href="/auth/login" className="text-arcade-primary hover:underline font-medium">
                   Sign In
                 </Link>
