@@ -3,7 +3,8 @@ import logging
 import sys
 import traceback
 from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -68,6 +69,12 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     
+    # Global exception handler — ensures unhandled errors return JSON, not plain text
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        logger.error(f"Unhandled exception on {request.method} {request.url.path}: {exc}", exc_info=True)
+        return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
     # Health check endpoint (MUST be first and unprotected)
     from app.database import get_db
     
