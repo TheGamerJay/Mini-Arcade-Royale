@@ -28,7 +28,7 @@ def get_transactions(user_id: int, skip: int = 0, limit: int = 20, db: Session =
     
     return {
         "total": total,
-        "transactions": [CreditTransactionResponse.from_orm(t) for t in transactions]
+        "transactions": [CreditTransactionResponse.model_validate(t) for t in transactions]
     }
 
 

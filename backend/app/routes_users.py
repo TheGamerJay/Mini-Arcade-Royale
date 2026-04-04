@@ -60,5 +60,5 @@ def search_users(q: str, skip: int = 0, limit: int = 10, db: Session = Depends(g
     
     return {
         "total": db.query(User).filter(User.username.ilike(f"%{q}%")).count(),
-        "users": [UserResponse.from_orm(u) for u in users]
+        "users": [UserResponse.model_validate(u) for u in users]
     }

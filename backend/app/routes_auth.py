@@ -62,7 +62,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     access_token = create_access_token(user_id=new_user.id, email=new_user.email)
     
     return AuthResponse(
-        user=UserResponse.from_orm(new_user),
+        user=UserResponse.model_validate(new_user),
         access_token=access_token,
         token_type="bearer",
         expires_in=24 * 3600,  # 24 hours in seconds
@@ -72,7 +72,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
 @router.post("/login", response_model=AuthResponse)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Login user and return JWT token"""
-    
+
     # Find user by email
     user = db.query(User).filter(User.email == credentials.email).first()
     if not user:
@@ -80,26 +80,26 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
-    
+
     # Verify password
     if not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
-    
+
     # Check if user is active
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive"
         )
-    
+
     # Create JWT token
     access_token = create_access_token(user_id=user.id, email=user.email)
-    
+
     return AuthResponse(
-        user=UserResponse.from_orm(user),
+        user=UserResponse.model_validate(user),
         access_token=access_token,
         token_type="bearer",
         expires_in=24 * 3600,  # 24 hours in seconds
