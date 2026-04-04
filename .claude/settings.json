@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"from_orm\\\\|model_validate\" backend/app/routes_*.py)",
+      "Bash(wc -l backend/app/*.py)"
+    ]
+  }
+}
