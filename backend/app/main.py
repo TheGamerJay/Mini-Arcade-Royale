@@ -3,7 +3,7 @@ import logging
 import sys
 import traceback
 from datetime import datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -68,8 +68,15 @@ def create_app() -> FastAPI:
     )
     
     # Health check endpoint (MUST be first and unprotected)
+    from app.database import get_db
+    
     @app.get("/api/health")
-    def health():
+    def health(db=Depends(get_db)):
+        try:
+            db.execute("SELECT 1")
+        except Exception as exc:
+            logger.error(f"✗ Database health check failed: {exc}")
+            raise HTTPException(status_code=503, detail="Database unavailable")
         return {"status": "ok"}
     
     # CORS middleware

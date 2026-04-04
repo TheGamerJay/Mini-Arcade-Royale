@@ -1,6 +1,7 @@
 """API routes for authentication"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from app.database import get_db
 from app.models import User, CreditWallet
 from app.schemas import UserRegister, UserLogin, UserResponse, AuthResponse
@@ -47,8 +48,15 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     wallet = CreditWallet(user_id=new_user.id, balance=0.0)
     db.add(wallet)
     
-    db.commit()
-    db.refresh(new_user)
+    try:
+        db.commit()
+        db.refresh(new_user)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Registration failed due to a database error. Please try again later.",
+        )
     
     # Create JWT token
     access_token = create_access_token(user_id=new_user.id, email=new_user.email)

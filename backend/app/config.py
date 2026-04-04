@@ -1,11 +1,12 @@
 """Application configuration"""
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings from environment variables"""
-    
+
     # App
     app_name: str = "Mini Arcade Royale"
     app_version: str = "0.1.0"
@@ -17,10 +18,16 @@ class Settings(BaseSettings):
     port: int = 8080  # Railway overrides via PORT env var
     
     # Database
-    database_url: str = "postgresql://arcade_dev:arcade_pass@localhost:5432/arcade_royale_dev"
-    
+    database_url: str = Field(
+        "postgresql://arcade_dev:arcade_pass@localhost:5432/arcade_royale_dev",
+        env="DATABASE_URL",
+    )
+
     # JWT
-    jwt_secret: str = "dev-secret-change-in-production-do-not-use"
+    jwt_secret: str = Field(
+        "dev-secret-change-in-production-do-not-use",
+        env="JWT_SECRET",
+    )
     jwt_algorithm: str = "HS256"
     jwt_expiration_hours: int = 24
     
