@@ -139,6 +139,8 @@ def create_app() -> FastAPI:
     from app.routes_users import router as users_router
     from app.routes_wallet import router as wallet_router
     from app.routes_games import router as games_router
+    from app.routes_account import router as account_router
+    from app.routes_missions import router as missions_router
     from app.routes_leaderboard import router as leaderboard_router
     from app.routes_store import router as store_router
     from app.routes_payments import router as payments_router
@@ -146,11 +148,13 @@ def create_app() -> FastAPI:
     from app.routes_admin import router as admin_router
     from app.routes_content import router as content_router
     from app.routes_analytics import router as analytics_router
-    
+
     app.include_router(auth_router)
     app.include_router(users_router)
     app.include_router(wallet_router)
     app.include_router(games_router)
+    app.include_router(account_router)
+    app.include_router(missions_router)
     app.include_router(leaderboard_router)
     app.include_router(store_router)
     app.include_router(payments_router)

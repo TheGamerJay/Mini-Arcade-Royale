@@ -1,46 +1,53 @@
 """Admin dashboard and management routes"""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from typing import Optional
 from app.database import get_db
 from app.models import User, GamePlay, CreditTransaction, CreditWallet
+from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
 
-def verify_admin(user_id: int, db: Session = Depends(get_db)):
-    """Verify user is admin"""
-    # In production, check user role/permissions
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return user
+def require_admin(current_user: User = Depends(get_current_user)):
+    """Require admin role — for now any active user can access (tighten with role field later)"""
+    # TODO: add role column to User model and check user.role == 'admin'
+    if not current_user.is_active:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return current_user
 
 
-@router.get("/dashboard", dependencies=[Depends(verify_admin)])
-def get_admin_dashboard(db: Session = Depends(get_db)):
-    """Get admin dashboard stats"""
+@router.get("/stats")
+def get_admin_stats(
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
     return {
         "total_users": db.query(User).count(),
         "active_users": db.query(User).filter(User.is_active == True).count(),
-        "verified_users": db.query(User).filter(User.is_verified == True).count(),
-        "total_credits_issued": db.query(func.sum(CreditWallet.balance)).scalar() or 0,
-        "total_revenue": db.query(func.sum(CreditTransaction.amount)).filter(
-            CreditTransaction.transaction_type == "purchase"
-        ).scalar() or 0,
+        "total_transactions": db.query(CreditTransaction).count(),
+        "total_credits_in_circulation": db.query(func.sum(CreditWallet.balance)).scalar() or 0,
         "total_games_played": db.query(GamePlay).count(),
-        "total_payouts": db.query(func.sum(CreditTransaction.amount)).filter(
-            CreditTransaction.transaction_type == "game_payout"
-        ).scalar() or 0,
     }
 
 
-@router.get("/users", dependencies=[Depends(verify_admin)])
-def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Get all users with pagination"""
-    users = db.query(User).offset(skip).limit(limit).all()
-    total = db.query(User).count()
-    
+@router.get("/users")
+def get_all_users(
+    limit: int = Query(default=25, le=100),
+    offset: int = Query(default=0, ge=0),
+    q: Optional[str] = None,
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    query = db.query(User)
+    if q:
+        query = query.filter(
+            (User.username.ilike(f"%{q}%")) | (User.email.ilike(f"%{q}%"))
+        )
+    total = query.count()
+    users = query.order_by(User.id.desc()).offset(offset).limit(limit).all()
+
     return {
         "total": total,
         "users": [
@@ -48,61 +55,39 @@ def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
                 "id": u.id,
                 "email": u.email,
                 "username": u.username,
+                "display_name": u.display_name,
                 "is_active": u.is_active,
                 "is_verified": u.is_verified,
                 "created_at": u.created_at.isoformat(),
             }
             for u in users
-        ]
+        ],
     }
 
 
-@router.get("/transactions", dependencies=[Depends(verify_admin)])
-def get_all_transactions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Get all transactions"""
-    transactions = db.query(CreditTransaction).order_by(
-        CreditTransaction.created_at.desc()
-    ).offset(skip).limit(limit).all()
-    
-    total = db.query(CreditTransaction).count()
-    
-    return {
-        "total": total,
-        "transactions": [
-            {
-                "id": t.id,
-                "user_id": t.user_id,
-                "type": t.transaction_type,
-                "amount": t.amount,
-                "status": t.status,
-                "created_at": t.created_at.isoformat(),
-            }
-            for t in transactions
-        ]
-    }
-
-
-@router.post("/users/{user_id}/deactivate", dependencies=[Depends(verify_admin)])
-def deactivate_user(user_id: int, db: Session = Depends(get_db)):
-    """Deactivate user account"""
+@router.post("/users/{user_id}/deactivate")
+def deactivate_user(
+    user_id: int,
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
     user.is_active = False
     db.commit()
-    
-    return {"deactivated": True, "user_id": user_id}
+    return {"message": "User deactivated"}
 
 
-@router.post("/users/{user_id}/verify", dependencies=[Depends(verify_admin)])
-def verify_user(user_id: int, db: Session = Depends(get_db)):
-    """Manually verify user"""
+@router.post("/users/{user_id}/activate")
+def activate_user(
+    user_id: int,
+    _: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    user.is_verified = True
+    user.is_active = True
     db.commit()
-    
-    return {"verified": True, "user_id": user_id}
+    return {"message": "User activated"}
