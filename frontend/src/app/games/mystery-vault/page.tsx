@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
 import { apiPost, formatCredits } from '@/lib/api'
 
-const BET_OPTIONS = [5, 10, 25, 50, 100, 200]
+const BET_OPTIONS = [5, 10, 25, 40, 100, 200]
 
 type GameState = 'idle' | 'buying' | 'opening' | 'revealed' | 'error'
 type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
@@ -42,7 +42,7 @@ const VAULT_DROPS = [
 export default function MysteryVaultPage() {
   const { isAuthenticated, credits, refreshCredits } = useAuth()
   const [state, setGameState] = useState<GameState>('idle')
-  const [bet, setBet] = useState(25)
+  const [bet, setBet] = useState(40)
   const [result, setResult] = useState<PlayResult | null>(null)
   const [animStep, setAnimStep] = useState(0)
   const [error, setError] = useState('')
@@ -172,7 +172,7 @@ export default function MysteryVaultPage() {
           )}
 
           {/* Bet picker */}
-          {(state === 'idle' || state === 'result' || state === 'error') && (
+          {(state === 'idle' || state === 'revealed' || state === 'error') && (
             <div className="mb-5">
               <p className="text-xs text-arcade-text-muted mb-2">Choose your bet</p>
               <div className="flex gap-2 justify-center flex-wrap">

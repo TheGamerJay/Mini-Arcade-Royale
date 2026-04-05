@@ -6,145 +6,159 @@ import { useAuth } from '@/context/AuthContext'
 import { apiGet, apiPost } from '@/lib/api'
 
 interface Mission {
-  id: number
+  id: string
   title: string
   description: string
-  reward_credits: number
+  reward: number
   progress: number
   target: number
   completed: boolean
   claimed: boolean
-  icon: string
-  category: string
+  type: 'daily' | 'weekly' | 'special'
 }
 
 const MOCK_MISSIONS: Mission[] = [
-  { id: 1, title: 'First Play', description: 'Play your first game', reward_credits: 50, progress: 0, target: 1, completed: false, claimed: false, icon: '🎮', category: 'Daily' },
-  { id: 2, title: 'Credit Spender', description: 'Spend 100 credits on games', reward_credits: 25, progress: 0, target: 100, completed: false, claimed: false, icon: '💎', category: 'Daily' },
-  { id: 3, title: 'Arcade Regular', description: 'Play 5 games this week', reward_credits: 150, progress: 0, target: 5, completed: false, claimed: false, icon: '🕹', category: 'Weekly' },
-  { id: 4, title: 'Game Explorer', description: 'Try 3 different game types', reward_credits: 200, progress: 0, target: 3, completed: false, claimed: false, icon: '🗺', category: 'Weekly' },
-  { id: 5, title: 'Streak Starter', description: 'Log in 3 days in a row', reward_credits: 100, progress: 0, target: 3, completed: false, claimed: false, icon: '🔥', category: 'Special' },
-  { id: 6, title: 'Vault Hunter', description: 'Open 2 Mystery Vaults', reward_credits: 175, progress: 0, target: 2, completed: false, claimed: false, icon: '🔮', category: 'Weekly' },
+  { id: 'daily_play_1',  title: 'First Play',      description: 'Play any game today',             reward: 5,  progress: 0, target: 1,  completed: false, claimed: false, type: 'daily' },
+  { id: 'daily_play_3',  title: 'Hat Trick',        description: 'Play 3 games today',              reward: 10, progress: 0, target: 3,  completed: false, claimed: false, type: 'daily' },
+  { id: 'daily_win_1',   title: 'Lucky Break',      description: 'Win a game today',                reward: 15, progress: 0, target: 1,  completed: false, claimed: false, type: 'daily' },
+  { id: 'weekly_play_10',title: 'Regular',          description: 'Play 10 games this week',         reward: 30, progress: 0, target: 10, completed: false, claimed: false, type: 'weekly' },
+  { id: 'weekly_win_5',  title: 'Winner',           description: 'Win 5 games this week',           reward: 50, progress: 0, target: 5,  completed: false, claimed: false, type: 'weekly' },
+  { id: 'weekly_vault_3',title: 'Vault Hunter',     description: 'Open 3 Mystery Vaults this week', reward: 40, progress: 0, target: 3,  completed: false, claimed: false, type: 'weekly' },
+  { id: 'special_first_spin',   title: 'First Spin',    description: 'Play Royale Spin for the first time',    reward: 20, progress: 0, target: 1, completed: false, claimed: false, type: 'special' },
+  { id: 'special_first_scratch', title: 'Scratch Master', description: 'Play Scratch Royale for the first time', reward: 20, progress: 0, target: 1, completed: false, claimed: false, type: 'special' },
 ]
 
 export default function MissionsPage() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, refreshCredits } = useAuth()
   const [missions, setMissions] = useState<Mission[]>(MOCK_MISSIONS)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('Daily')
-  const [claiming, setClaiming] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'special'>('daily')
+  const [claiming, setClaiming] = useState<string | null>(null)
+  const [claimMsg, setClaimMsg] = useState('')
 
   useEffect(() => {
     if (!isAuthenticated) { setLoading(false); return }
     apiGet<{ missions: Mission[] }>('/api/v1/missions')
-      .then(d => setMissions(d.missions?.length ? d.missions : MOCK_MISSIONS))
-      .catch(() => setMissions(MOCK_MISSIONS))
+      .then(d => {
+        if (d.missions?.length) setMissions(d.missions)
+      })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [isAuthenticated])
 
-  const handleClaim = async (id: number) => {
+  const handleClaim = async (id: string) => {
     setClaiming(id)
+    setClaimMsg('')
     try {
-      await apiPost(`/api/v1/missions/${id}/claim`)
+      const res = await apiPost<{ message: string; credits_awarded: number }>(`/api/v1/missions/${id}/claim`)
       setMissions(ms => ms.map(m => m.id === id ? { ...m, claimed: true } : m))
-    } catch {}
+      setClaimMsg(res.message || 'Reward claimed!')
+      refreshCredits()
+      setTimeout(() => setClaimMsg(''), 3000)
+    } catch (err: any) {
+      setClaimMsg(err.message || 'Claim failed')
+      setTimeout(() => setClaimMsg(''), 3000)
+    }
     setClaiming(null)
   }
 
-  const tabs = ['Daily', 'Weekly', 'Special']
-  const filtered = missions.filter(m => m.category === activeTab)
+  const TABS: { key: 'daily' | 'weekly' | 'special'; label: string; icon: string }[] = [
+    { key: 'daily',   label: 'Daily',   icon: '📅' },
+    { key: 'weekly',  label: 'Weekly',  icon: '📆' },
+    { key: 'special', label: 'Special', icon: '⭐' },
+  ]
+
+  const filtered = missions.filter(m => m.type === activeTab)
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Hero */}
-      <div className="relative py-14 px-4 text-center overflow-hidden">
+      <div className="relative py-12 px-4 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
-        <div className="relative container-md">
-          <span className="badge-blue mb-4 inline-flex">🎯 Missions</span>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Complete <span className="text-gradient">Missions</span>
+        <div className="relative max-w-2xl mx-auto">
+          <h1 className="text-4xl font-black mb-2">
+            🎯 <span className="text-gradient">Missions</span>
           </h1>
-          <p className="text-arcade-text-muted text-lg">
-            Complete challenges to earn bonus credits and achievements.
-          </p>
+          <p className="text-arcade-text-muted">Complete challenges to earn free Mini Credits.</p>
         </div>
       </div>
 
-      <div className="container-xl pb-20">
+      <div className="max-w-4xl mx-auto px-4 pb-16">
         {!isAuthenticated ? (
-          <div className="empty-state">
+          <div className="empty-state py-16">
             <div className="empty-state-icon">🎯</div>
-            <h2 className="empty-state-title">Sign in to view missions</h2>
-            <p className="empty-state-desc mb-6">Create an account to start completing missions and earning bonus credits.</p>
-            <Link href="/auth/register" className="btn-primary">Get Started</Link>
+            <p className="empty-state-title">Sign in to view missions</p>
+            <p className="empty-state-desc mb-6">Complete missions and earn bonus Mini Credits.</p>
+            <Link href="/auth/register" className="btn-primary">Get Started Free</Link>
           </div>
         ) : (
           <>
+            {claimMsg && (
+              <div className="alert-success mb-4"><span>✓</span>{claimMsg}</div>
+            )}
+
             {/* Tabs */}
-            <div className="tab-bar mb-8 max-w-sm">
-              {tabs.map(tab => (
-                <button key={tab} onClick={() => setActiveTab(tab)}
-                  className={`tab ${activeTab === tab ? 'tab-active' : ''}`}>
-                  {tab === 'Daily' ? '📅' : tab === 'Weekly' ? '📆' : '⭐'} {tab}
+            <div className="flex gap-2 mb-6">
+              {TABS.map(tab => (
+                <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+                  className={`tab ${activeTab === tab.key ? 'tab-active' : ''}`}>
+                  {tab.icon} {tab.label}
                 </button>
               ))}
             </div>
 
-            {/* Mission cards */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map(mission => (
-                <div key={mission.id}
-                  className={`card p-5 transition-all ${mission.claimed ? 'opacity-60' : ''}`}>
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                        style={{ background: 'linear-gradient(135deg, #00C2FF22, #7B2FBE22)', border: '1px solid rgba(0,194,255,0.2)' }}>
-                        {mission.icon}
+            {loading ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1,2,3].map(i => <div key={i} className="skeleton h-36 rounded-2xl" />)}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="empty-state py-12">
+                <div className="empty-state-icon">✅</div>
+                <p className="empty-state-title">No missions here</p>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filtered.map(mission => {
+                  const pct = Math.min(100, Math.round((mission.progress / mission.target) * 100))
+                  return (
+                    <div key={mission.id}
+                      className={`card p-5 flex flex-col gap-3 ${mission.claimed ? 'opacity-50' : ''}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-sm">{mission.title}</p>
+                          <p className="text-xs text-arcade-text-muted mt-0.5">{mission.description}</p>
+                        </div>
+                        <span className="badge badge-muted text-xs flex-shrink-0">+{mission.reward} cr</span>
                       </div>
+
                       <div>
-                        <h3 className="font-semibold text-sm">{mission.title}</h3>
-                        <p className="text-xs text-arcade-text-muted">{mission.description}</p>
+                        <div className="progress-bar h-1.5">
+                          <div className="progress-fill" style={{ width: `${pct}%` }} />
+                        </div>
+                        <div className="flex justify-between mt-1">
+                          <span className="text-xs text-arcade-text-muted">{mission.progress}/{mission.target}</span>
+                          <span className="text-xs text-arcade-text-muted">{pct}%</span>
+                        </div>
                       </div>
-                    </div>
-                    <span className="badge-blue text-xs flex-shrink-0 ml-2">
-                      +{mission.reward_credits}
-                    </span>
-                  </div>
 
-                  {/* Progress bar */}
-                  <div className="mb-3">
-                    <div className="progress-bar h-1.5">
-                      <div className="progress-fill"
-                        style={{ width: `${Math.min(100, (mission.progress / mission.target) * 100)}%` }} />
+                      {mission.claimed ? (
+                        <div className="text-center text-xs text-arcade-success font-medium">✓ Claimed</div>
+                      ) : mission.completed ? (
+                        <button onClick={() => handleClaim(mission.id)}
+                          disabled={claiming === mission.id}
+                          className="btn-primary btn-sm w-full">
+                          {claiming === mission.id ? 'Claiming...' : '🎁 Claim Reward'}
+                        </button>
+                      ) : (
+                        <Link href="/games" className="btn-ghost btn-sm w-full text-center text-xs block">
+                          Play to progress →
+                        </Link>
+                      )}
                     </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-arcade-text-muted">
-                        {mission.progress}/{mission.target}
-                      </span>
-                      <span className="text-xs text-arcade-text-muted">
-                        {Math.round((mission.progress / mission.target) * 100)}%
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Action */}
-                  {mission.claimed ? (
-                    <div className="text-center text-xs text-arcade-success font-medium">✓ Claimed</div>
-                  ) : mission.completed ? (
-                    <button
-                      onClick={() => handleClaim(mission.id)}
-                      disabled={claiming === mission.id}
-                      className="btn-primary w-full btn-sm">
-                      {claiming === mission.id ? 'Claiming...' : '🎁 Claim Reward'}
-                    </button>
-                  ) : (
-                    <Link href="/games" className="btn-ghost w-full btn-sm text-center block text-xs">
-                      Play to progress →
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </div>
+                  )
+                })}
+              </div>
+            )}
           </>
         )}
       </div>

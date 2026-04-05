@@ -37,7 +37,7 @@ export default function CreditsPage() {
       .then(d => setTransactions(d.transactions || []))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [refreshCredits])
 
   return (
     <div className="space-y-6">

@@ -12,7 +12,7 @@ from app.auth import hash_password, verify_password, create_access_token, get_cu
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
-SIGNUP_BONUS_CREDITS = 30  # Free mini credits on new account
+SIGNUP_BONUS_CREDITS = 40  # Free mini credits on new account
 
 
 # ─── Register ────────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         user_id=new_user.id,
         transaction_type="SIGNUP_BONUS",
         amount=float(SIGNUP_BONUS_CREDITS),
-        description="Welcome bonus — 30 free Mini Credits",
+        description="Welcome bonus — 40 free Mini Credits",
         balance_before=0.0,
         balance_after=float(SIGNUP_BONUS_CREDITS),
         status="completed",
