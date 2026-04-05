@@ -4,14 +4,25 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-import os
-import uuid
+import base64
 from app.database import get_db
 from app.models import User
 from app.schemas import UserResponse
 from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
+
+# Avatar stored as base64 data URL directly in Postgres —
+# no filesystem dependency, survives Railway deploys.
+ALLOWED_AVATAR_TYPES = {
+    "image/png":  "png",
+    "image/jpeg": "jpeg",
+    "image/gif":  "gif",
+    "image/webp": "webp",
+    "video/mp4":  "mp4",
+}
+MAX_AVATAR_BYTES = 8 * 1024 * 1024   # 8 MB — base64 inflates ~33%, keeps DB sane
+MAX_VIDEO_BYTES  = 8 * 1024 * 1024   # same limit for MP4 previews
 
 
 class UserUpdateRequest(BaseModel):
@@ -51,45 +62,39 @@ def update_profile(
     return UserResponse.model_validate(current_user)
 
 
-ALLOWED_AVATAR_TYPES = {
-    "image/png", "image/jpeg", "image/gif", "image/webp", "video/mp4"
-}
-MAX_AVATAR_SIZE = 512 * 1024 * 1024  # 512 MB
-AVATAR_DIR = "/tmp/avatars"
-
-
 @router.post("/me/avatar")
 async def upload_avatar(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Upload profile avatar (PNG, JPG, JPEG, GIF, WebP, MP4 — max 512 MB)"""
-    if file.content_type not in ALLOWED_AVATAR_TYPES:
+    """Upload profile avatar — stored as base64 data URL in Postgres.
+    Supported: PNG, JPG, JPEG, GIF, WebP, MP4. Max 8 MB per file.
+    No external storage needed — works on Railway across deploys.
+    """
+    mime = file.content_type or ""
+    if mime not in ALLOWED_AVATAR_TYPES:
         raise HTTPException(
             status_code=400,
             detail="Unsupported file type. Allowed: PNG, JPG, JPEG, GIF, WebP, MP4",
         )
 
     content = await file.read()
-    if len(content) > MAX_AVATAR_SIZE:
-        raise HTTPException(status_code=400, detail="File too large. Maximum size is 512 MB")
+    limit = MAX_VIDEO_BYTES if mime == "video/mp4" else MAX_AVATAR_BYTES
+    if len(content) > limit:
+        mb = limit // (1024 * 1024)
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum is {mb} MB.")
 
-    # Save to disk (in production swap this for S3/R2/Cloudflare)
-    os.makedirs(AVATAR_DIR, exist_ok=True)
-    ext = file.filename.rsplit(".", 1)[-1].lower() if file.filename and "." in file.filename else "bin"
-    filename = f"{current_user.id}_{uuid.uuid4().hex}.{ext}"
-    filepath = os.path.join(AVATAR_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(content)
+    # Encode as base64 data URL — stored in the avatar_url column
+    b64 = base64.b64encode(content).decode("utf-8")
+    data_url = f"data:{mime};base64,{b64}"
 
-    # Store a relative URL — in production this would be a CDN URL
-    avatar_url = f"/avatars/{filename}"
-    current_user.avatar_url = avatar_url
+    current_user.avatar_url = data_url
     current_user.updated_at = datetime.utcnow()
     db.commit()
 
-    return {"avatar_url": avatar_url, "message": "Avatar updated"}
+    # Return just the mime type confirmation, not the full data URL (too large for JSON log)
+    return {"avatar_url": data_url, "message": "Avatar updated"}
 
 
 @router.get("/profile/{username}", response_model=UserResponse)

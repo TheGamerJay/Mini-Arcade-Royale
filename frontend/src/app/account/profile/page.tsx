@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import { apiPatch, apiFetch } from '@/lib/api'
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'video/mp4']
-const MAX_SIZE_MB = 512
+const MAX_SIZE_MB = 8   // stored as base64 data URL in Postgres — 8 MB keeps DB sane
 
 export default function ProfilePage() {
   const { user, login, token } = useAuth()
@@ -134,7 +134,7 @@ export default function ProfilePage() {
 
           <div className="flex-1 min-w-0">
             <p className="text-xs text-arcade-text-muted mb-2">
-              PNG · JPG · JPEG · GIF · WebP · MP4 &nbsp;·&nbsp; max 512 MB
+              PNG · JPG · JPEG · GIF · WebP · MP4 &nbsp;·&nbsp; max 8 MB
             </p>
             <div className="flex gap-2 flex-wrap">
               <button
@@ -164,7 +164,7 @@ export default function ProfilePage() {
         <input
           ref={fileRef}
           type="file"
-          accept=".png,.jpg,.jpeg,.gif,.webp,.mp4,image/png,image/jpeg,image/gif,image/webp,video/mp4"
+          accept="image/png,image/jpeg,image/gif,image/webp,video/mp4"
           onChange={handleFileChange}
           className="hidden"
         />
