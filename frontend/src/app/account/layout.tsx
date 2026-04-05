@@ -46,9 +46,11 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
               {/* User summary */}
               <div className="px-3 py-4 mb-2 border-b border-arcade-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold"
+                  <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center font-bold flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg, #00C2FF, #7B2FBE)' }}>
-                    {user.username?.[0]?.toUpperCase()}
+                    {user.avatar_url
+                      ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                      : user.username?.[0]?.toUpperCase()}
                   </div>
                   <div className="overflow-hidden">
                     <p className="font-semibold text-sm truncate">{user.username}</p>
